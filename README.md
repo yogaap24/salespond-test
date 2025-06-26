@@ -25,6 +25,10 @@ Ensure you have Docker and Docker Compose installed on your machine.
     This command will build the images for both the backend and frontend, then start all containers. The database migration and seeding processes will run automatically via an entrypoint script.
     ```bash
     docker-compose up -d --build
+
+    docker-compose exec backend chmod -R 777 storage bootstrap/cache
+
+    docker-compose exec backend php artisan migrate --seed
     ```
 
 3. **Done! Application is Ready**
