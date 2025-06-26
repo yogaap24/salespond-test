@@ -20,7 +20,6 @@ class ContactController extends Controller
             ->when($request->query('role'), function ($query, $role) {
                 return $query->where('role', $role);
             })
-            ->orderBy('name')
             ->get();
 
         return response()->json($contacts);
@@ -47,7 +46,17 @@ class ContactController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $contact = Contact::findOrFail($id);
+
+        $request->validate([
+            'is_favorite' => 'required|boolean'
+        ]);
+
+        $contact->update([
+            'is_favorite' => $request->is_favorite
+        ]);
+
+        return response()->json($contact);
     }
 
     /**

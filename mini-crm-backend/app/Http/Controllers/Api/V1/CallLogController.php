@@ -12,11 +12,21 @@ class CallLogController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ]);
+
         $logs = CallLog::with('contact:id,name')
-                ->orderBy('timestamp', 'desc')
-                ->get();
+            ->when($request->filled('start_date') && $request->filled('end_date'), function ($query) use ($request) {
+                $startDate = $request->start_date . ' 00:00:00';
+                $endDate = $request->end_date . ' 23:59:59';
+                return $query->whereBetween('timestamp', [$startDate, $endDate]);
+            })
+            ->orderBy('timestamp', 'desc')
+            ->get();
 
         return response()->json($logs);
     }
