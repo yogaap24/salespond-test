@@ -45,12 +45,15 @@ export default new Vuex.Store({
         commit('UPDATE_CONTACT_FAVORITE', updatedContact);
       } catch (err) { commit('SET_ERROR', err.message); }
     },
-    async createCallLogAction({ commit }, contactId) {
+    async createCallLogAction({ commit }, { contactId, contactName }) {
       try {
         const newLog = await createCallLog(contactId);
+        newLog.contact = { name: contactName };
         commit('ADD_CALL_LOG', newLog);
-        alert(`Call to contact simulated. Log created.`);
-      } catch (err) { commit('SET_ERROR', err.message); }
+        alert(`Call to ${contactName} simulated. Log created.`);
+      } catch (err) { 
+        commit('SET_ERROR', err.message); 
+      }
     },
   },
   getters: {

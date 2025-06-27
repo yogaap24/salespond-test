@@ -2,7 +2,7 @@
   <div>
     <h1>Contacts</h1>
     <div class="filters">
-      <input v-model="filters.company" type="text" placeholder="Filter by Company..."/>
+      <input v-model="filters.company" type="text" placeholder="Filter by Company..." />
       <select v-model="filters.role">
         <option value="">All Roles</option>
         <option value="Manager">Manager</option>
@@ -36,7 +36,7 @@
           <td>{{ contact.company }}</td>
           <td>{{ contact.role }}</td>
           <td>
-            <span class="action-icon" @click="callContact(contact.id)">
+            <span class="action-icon" @click="callContact(contact)">
               📞
             </span>
           </td>
@@ -47,78 +47,117 @@
 </template>
 
 <script>
-  // BAGIAN SCRIPT TIDAK PERLU DIUBAH SAMA SEKALI
-  import { mapGetters, mapActions } from 'vuex';
-  export default {
-    name: 'ContactsView',
-    data: () => ({
-      filters: { company: '', role: '' },
-      debounceTimer: null,
-    }),
-    computed: { ...mapGetters(['allContacts', 'isLoading', 'getError']) },
-    watch: {
-      filters: {
-        handler() {
-          clearTimeout(this.debounceTimer);
-          this.debounceTimer = setTimeout(() => this.performFetch(), 500);
-        },
-        deep: true,
+import { mapGetters, mapActions } from 'vuex';
+export default {
+  name: 'ContactsView',
+  data: () => ({
+    filters: { company: '', role: '' },
+    debounceTimer: null,
+  }),
+  computed: { ...mapGetters(['allContacts', 'isLoading', 'getError']) },
+  watch: {
+    filters: {
+      handler() {
+        clearTimeout(this.debounceTimer);
+        this.debounceTimer = setTimeout(() => this.performFetch(), 500);
       },
+      deep: true,
     },
-    created() {
-      this.filters.company = this.$route.query.company || '';
-      this.filters.role = this.$route.query.role || '';
-      this.performFetch();
+  },
+  created() {
+    this.filters.company = this.$route.query.company || '';
+    this.filters.role = this.$route.query.role || '';
+    this.performFetch();
+  },
+  methods: {
+    ...mapActions(['fetchContacts', 'toggleFavoriteAction', 'createCallLogAction']),
+    performFetch() {
+      const activeFilters = {};
+      const params = new URLSearchParams();
+
+      if (this.filters.company) {
+        activeFilters.company = this.filters.company;
+        params.append('company', this.filters.company);
+      }
+      if (this.filters.role) {
+        activeFilters.role = this.filters.role;
+        params.append('role', this.filters.role);
+      }
+      this.$router.push({ query: activeFilters }).catch(() => { });
+      this.fetchContacts(params);
     },
-    methods: {
-      ...mapActions(['fetchContacts', 'toggleFavoriteAction', 'createCallLogAction']),
-      performFetch() {
-        const params = new URLSearchParams();
-        if (this.filters.company) params.append('company', this.filters.company);
-        if (this.filters.role) params.append('role', this.filters.role);
-        this.$router.push({ query: this.filters }).catch(() => {});
-        this.fetchContacts(params);
-      },
-      toggleFav(contact) {
-        this.toggleFavoriteAction({ contactId: contact.id, isFavorite: !contact.is_favorite });
-      },
-      callContact(contactId) {
-        this.createCallLogAction(contactId);
-      },
+    toggleFav(contact) {
+      this.toggleFavoriteAction({ contactId: contact.id, isFavorite: !contact.is_favorite });
     },
-  };
+    callContact(contact) {
+      this.createCallLogAction({ 
+        contactId: contact.id, 
+        contactName: contact.name 
+      });
+    },
+  },
+};
 </script>
 
 <style scoped>
-  /* MENYESUAIKAN STYLE UNTUK TAMPILAN TABEL */
-  .filters { margin-bottom: 20px; }
-  .filters input, .filters select { margin-right: 10px; padding: 8px; }
+.filters {
+  margin-bottom: 20px;
+}
 
-  .contact-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-  }
-  .contact-table th, .contact-table td {
-    padding: 12px 15px;
-    border-bottom: 1px solid #ddd;
-  }
-  .contact-table th {
-    background-color: #f4f4f4;
-  }
-  .contact-table tbody tr:hover {
-    background-color: #f9f9f9;
-  }
+.filters input,
+.filters select {
+  margin-right: 10px;
+  padding: 8px;
+}
 
-  .action-icon {
-    cursor: pointer;
-    font-size: 1.5em;
-  }
-  .col-fav { width: 5%; text-align: center; }
-  .col-action { width: 5%; text-align: center; }
-  .col-name { width: 30%; }
-  .col-company { width: 30%; }
-  .col-role { width: 25%; }
+.contact-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
 
-  .error { color: red; }
+.contact-table th,
+.contact-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #ddd;
+}
+
+.contact-table th {
+  background-color: #f4f4f4;
+}
+
+.contact-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.action-icon {
+  cursor: pointer;
+  font-size: 1.5em;
+}
+
+.col-fav {
+  width: 5%;
+  text-align: center;
+}
+
+.col-action {
+  width: 5%;
+  text-align: center;
+}
+
+.col-name {
+  width: 30%;
+}
+
+.col-company {
+  width: 30%;
+}
+
+.col-role {
+  width: 25%;
+}
+
+.error {
+  color: red;
+}
 </style>

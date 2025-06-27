@@ -1,4 +1,3 @@
-// BASE_URL kita kosongkan karena kita akan menggunakan reverse proxy di Nginx
 const BASE_URL = '';
 
 async function handleResponse(response) {
@@ -31,7 +30,6 @@ export async function toggleFavorite(contactId, isFavorite) {
   return handleResponse(response);
 }
 
-// Tambahkan fungsi untuk simulasi panggilan
 export async function createCallLog(contactId) {
   const response = await fetch(`${BASE_URL}/api/v1/call-logs`, {
     method: 'POST',
